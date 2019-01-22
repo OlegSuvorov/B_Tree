@@ -17,14 +17,8 @@ namespace B_Tree
             for (int i = 1; i < 10000; i++)
             {
                 TestTree.Insert(i);
-            }
+            }            
             
-            Console.WriteLine($" Корень: {TestTree.root.keys[0]}");
-            Console.WriteLine($" Корень: {TestTree.root.keys[1]}");
-            Console.WriteLine($" Корень: {TestTree.root.keys[2]}");
-            Console.WriteLine($" Корень: {TestTree.root.keys[3]}");
-            Console.WriteLine($" Корень: {TestTree.root.keys[4]}");
-           
             Console.Read();                                     
         }
     }

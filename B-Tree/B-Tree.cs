@@ -121,7 +121,39 @@ namespace B_Tree
             node.parent.keysQty++;
 
             return newNode;
-        }        
+        }
+        public bool Search(int val)
+        {
+            return searchInNode(root, val);
+        }
+        private bool searchInNode(Node node, int val)
+        {
+            int pos = 0;
+            int checkPos = 0;
+            while (pos < node.keysQty && val > node.keys[pos])
+            {
+                pos++;
+            }
+
+            checkPos = pos;
+
+            if (pos == 2 * t - 1)
+            {
+                checkPos--;
+            }
+
+            if (node.keys[checkPos] == val)
+            {
+                return true;
+            }
+
+            if (node.isLeaf)
+            {
+                return false;
+            }                
+
+            return searchInNode(node.children[pos], val);
+        }
         public void Delete(int value)
         {
             // TBD метод для удаления ключей
