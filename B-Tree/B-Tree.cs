@@ -48,8 +48,13 @@ namespace B_Tree
             return InsertNonFullNode(root, val);
         }        
         private bool InsertNonFullNode(Node node, int val)
-        {           
-            int pos = node.keysQty - 1;
+        {
+            if (CheckDuplicate(node, val))
+            {
+                return false;
+            }
+
+            int pos = node.keysQty - 1;            
             
             if (node.isLeaf)
             {
@@ -67,8 +72,8 @@ namespace B_Tree
                 while (pos >= 0 && node.keys[pos] > val)
                 {
                     pos--;
-                }
-                    
+                }               
+
                 if (node.children[pos + 1].keysQty == 2 * t - 1)
                 { 
                     SplitNode(node.children[pos + 1], pos + 1);
@@ -121,6 +126,99 @@ namespace B_Tree
             node.parent.keysQty++;
 
             return newNode;
+        }
+        private bool CheckDuplicate(Node node, int val)
+        {
+            for (int i = 0; i < node.keysQty; i++)
+            {
+                if (node.keys[i] == val)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        public bool CheckAllowedSize()
+        {
+            return CheckNodeSize(root);
+        }
+        private bool CheckNodeSize(Node node)
+        {
+            if (node.keysQty < t-1 || node.keysQty > 2 * t - 1)
+            {
+                return false;
+            }
+
+            if (!node.isLeaf)
+            {
+                for (int i = 0; i < node.keysQty + 1; i++)
+                {
+                    if (!CheckNodeSize(node.children[i]))
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+        public bool CheckOrder()
+        {
+            return CheckNodeOrder(root);
+        }
+        private bool CheckNodeOrder(Node node)
+        {
+            if (node.keysQty >=2)
+            {
+                for (int i = 0; i < node.keysQty - 2; i++)
+                {
+                    if (node.keys[i] > node.keys[i + 1])
+                    {
+                        return false;
+                    }
+                }
+            }            
+
+            if (!node.isLeaf)
+            {
+                for (int i = 0; i < node.keysQty + 1; i++)
+                {
+                    if (!CheckNodeOrder(node.children[i]))
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+        public bool CheckMinValuePosition(int val)
+        {
+            Node firstLeaf = GetFirstLowestNode(root);
+            return val == firstLeaf.keys[0];
+        }
+        private Node GetFirstLowestNode(Node node)
+        {
+            if (node.isLeaf)
+            {
+                return node;
+            }
+
+            return GetFirstLowestNode(node.children[0]);
+        }
+        public bool CheckMaxValuePosition(int val)
+        {
+            Node lastLeaf = GetLastLowestNode(root);
+            return val == lastLeaf.keys[lastLeaf.keysQty - 1];
+        }
+        private Node GetLastLowestNode(Node node)
+        {
+            if (node.isLeaf)
+            {
+                return node;
+            }
+
+            return GetLastLowestNode(node.children[node.keysQty]);
         }
         public bool Search(int val)
         {
