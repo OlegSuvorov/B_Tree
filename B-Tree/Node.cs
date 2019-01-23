@@ -13,10 +13,10 @@ namespace B_Tree
         public Node parent { get; set; }
         public int[] keys { get; set; }
         public bool isLeaf { get; set; }
-        public Node(int t, bool isLeaf)
+        public Node(int maxNodeSize, bool isLeaf)
         {
-            this.children = new Node[2 * t];
-            this.keys = new int[2 * t - 1];
+            this.children = new Node[maxNodeSize + 1];
+            this.keys = new int[maxNodeSize];
             this.keysQty = 0;
             this.isLeaf = isLeaf;
             this.parent = null;
