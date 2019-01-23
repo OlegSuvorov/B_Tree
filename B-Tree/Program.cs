@@ -14,7 +14,7 @@ namespace B_Tree
             Console.WriteLine(" Максимально допустимый размер массива значений в узлах равен 5");
             Console.WriteLine(" Минимально допустимый размер массива значений в узлах равен 2");
 
-            B_Tree TestTree = new B_Tree(3);
+            B_Tree TestTree = new B_Tree(5);
 
             for (int i = 1; i < 10000; i++)
             {
@@ -40,7 +40,7 @@ namespace B_Tree
             Console.WriteLine($" на начальной позиции первого листа дерева");
             Console.WriteLine($" Ожидаем: True. Результат: {TestTree.CheckMinValuePosition(1)}");
             Console.WriteLine($" 7) Проверяем наличие наибольшего введенного значения (9999)");
-            Console.WriteLine($" на последней позиции последнего листа дерева");
+            Console.WriteLine($" на конечной позиции последнего листа дерева");
             Console.WriteLine($" Ожидаем: True. Результат: {TestTree.CheckMaxValuePosition(9999)}");
             Console.Read();                                     
         }

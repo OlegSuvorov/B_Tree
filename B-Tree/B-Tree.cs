@@ -9,16 +9,16 @@ namespace B_Tree
     class B_Tree
     {
         public Node root { get; private set; }
-        public int t { get; private set; }
-        public B_Tree(int t)
+        public int maxNodeSize { get; private set; }
+        public B_Tree(int maxNodeSize)
         {
-            if (t < 2)
+            if (maxNodeSize < 3)
             {
-                Console.WriteLine(" Размерность должна быть целым положительным числом не менее 2");
+                Console.WriteLine(" Максимальный размер узла должен быть целым положительным числом не менее 3");
                 return;
             }
-            root = new Node(t, true);
-            this.t = t;
+            root = new Node(maxNodeSize, true);
+            this.maxNodeSize = maxNodeSize;
         }        
         
         public bool Insert(int val)
@@ -30,9 +30,9 @@ namespace B_Tree
                 return true;
             }
 
-            if (root.keysQty == 2 * t - 1)
+            if (root.keysQty == maxNodeSize)
             {
-                Node newRoot = new Node(t, false);
+                Node newRoot = new Node(maxNodeSize, false);
                 newRoot.children[0] = root;
                 root.parent = newRoot;
                 Node newNode = SplitNode(root, 0);
@@ -74,7 +74,7 @@ namespace B_Tree
                     pos--;
                 }               
 
-                if (node.children[pos + 1].keysQty == 2 * t - 1)
+                if (node.children[pos + 1].keysQty == maxNodeSize)
                 { 
                     SplitNode(node.children[pos + 1], pos + 1);
                     if (node.keys[pos + 1] < val)
@@ -87,27 +87,27 @@ namespace B_Tree
         }        
         private Node SplitNode(Node node, int pos)
         {
-            Node newNode = new Node(t, node.isLeaf);
-            newNode.keysQty = t - 1;
+            Node newNode = new Node(maxNodeSize, node.isLeaf);
+            newNode.keysQty = ((maxNodeSize + 1) / 2) - 1;
             newNode.parent = node.parent;
 
-            for (int i = 0; i < t - 1; i++)
+            for (int i = 0; i < ((maxNodeSize + 1) / 2) - 1; i++)
             {
-                newNode.keys[i] = node.keys[i + t];
-                node.keys[i + t] = 0;
+                newNode.keys[i] = node.keys[i + ((maxNodeSize + 1) / 2)];
+                node.keys[i + ((maxNodeSize + 1) / 2)] = 0;
             }                
 
             if (!node.isLeaf)
             {
-                for (int i = 0; i < t; i++)
+                for (int i = 0; i < ((maxNodeSize + 1) / 2); i++)
                 {
-                    newNode.children[i] = node.children[i + t];
+                    newNode.children[i] = node.children[i + ((maxNodeSize + 1) / 2)];
                     newNode.children[i].parent = newNode;
-                    node.children[i + t] = null;
+                    node.children[i + ((maxNodeSize + 1) / 2)] = null;
                 }
             }
 
-            node.keysQty = t - 1;
+            node.keysQty = ((maxNodeSize + 1) / 2) - 1;
 
             for (int i = node.parent.keysQty; i >= pos + 1; i--)
             {
@@ -121,8 +121,8 @@ namespace B_Tree
                 node.parent.keys[i + 1] = node.parent.keys[i];
             }                
            
-            node.parent.keys[pos] = node.keys[t - 1];
-            node.keys[t - 1] = 0;
+            node.parent.keys[pos] = node.keys[((maxNodeSize + 1) / 2) - 1];
+            node.keys[((maxNodeSize + 1) / 2) - 1] = 0;
             node.parent.keysQty++;
 
             return newNode;
@@ -144,7 +144,7 @@ namespace B_Tree
         }
         private bool CheckNodeSize(Node node)
         {
-            if (node.keysQty < t-1 || node.keysQty > 2 * t - 1)
+            if (node.keysQty < ((maxNodeSize + 1) / 2) - 1 || node.keysQty > maxNodeSize)
             {
                 return false;
             }
@@ -235,7 +235,7 @@ namespace B_Tree
 
             checkPos = pos;
 
-            if (pos == 2 * t - 1)
+            if (pos == maxNodeSize)
             {
                 checkPos--;
             }
