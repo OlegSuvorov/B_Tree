@@ -137,89 +137,7 @@ namespace B_Tree
                 }
             }
             return false;
-        }
-        public bool CheckAllowedSize()
-        {
-            return CheckNodeSize(root);
-        }
-        private bool CheckNodeSize(Node node)
-        {
-            if (node.keysQty < ((maxNodeSize + 1) / 2) - 1 || node.keysQty > maxNodeSize)
-            {
-                return false;
-            }
-
-            if (!node.isLeaf)
-            {
-                for (int i = 0; i < node.keysQty + 1; i++)
-                {
-                    if (!CheckNodeSize(node.children[i]))
-                    {
-                        return false;
-                    }
-                }
-            }
-
-            return true;
-        }
-        public bool CheckOrder()
-        {
-            return CheckNodeOrder(root);
-        }
-        private bool CheckNodeOrder(Node node)
-        {
-            if (node.keysQty >=2)
-            {
-                for (int i = 0; i < node.keysQty - 2; i++)
-                {
-                    if (node.keys[i] > node.keys[i + 1])
-                    {
-                        return false;
-                    }
-                }
-            }            
-
-            if (!node.isLeaf)
-            {
-                for (int i = 0; i < node.keysQty + 1; i++)
-                {
-                    if (!CheckNodeOrder(node.children[i]))
-                    {
-                        return false;
-                    }
-                }
-            }
-
-            return true;
-        }
-        public bool CheckMinValuePosition(int val)
-        {
-            Node firstLeaf = GetFirstLowestNode(root);
-            return val == firstLeaf.keys[0];
-        }
-        private Node GetFirstLowestNode(Node node)
-        {
-            if (node.isLeaf)
-            {
-                return node;
-            }
-
-            return GetFirstLowestNode(node.children[0]);
-        }
-        public bool CheckMaxValuePosition(int val)
-        {
-            Node lastLeaf = GetLastLowestNode(root);
-            return val == lastLeaf.keys[lastLeaf.keysQty - 1];
-        }
-        private Node GetLastLowestNode(Node node)
-        {
-            if (node.isLeaf)
-            {
-                return node;
-            }
-
-            return GetLastLowestNode(node.children[node.keysQty]);
-        }
+        }      
         public bool Search(int val)
         {
             return searchInNode(root, val);
@@ -251,10 +169,6 @@ namespace B_Tree
             }                
 
             return searchInNode(node.children[pos], val);
-        }
-        public void Delete(int value)
-        {
-            // TBD метод для удаления ключей
         }
     }
 }

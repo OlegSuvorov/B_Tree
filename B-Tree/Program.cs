@@ -32,16 +32,16 @@ namespace B_Tree
             Console.WriteLine($" Ожидаем: False. Результат: {TestTree.Insert(5555)}");
             Console.WriteLine($" 4) Проверяем дерево на максимально и минимально");
             Console.WriteLine($" допустимый размер массива значений в узлах");
-            Console.WriteLine($" Ожидаем: True. Результат: {TestTree.CheckAllowedSize()}");
+            Console.WriteLine($" Ожидаем: True. Результат: {Test.CheckAllowedSize(TestTree)}");
             Console.WriteLine($" 5) Проверяем узлы дерева на упорядоченность ");
             Console.WriteLine($" элементов по возрастанию");
-            Console.WriteLine($" Ожидаем: True. Результат: {TestTree.CheckOrder()}");
+            Console.WriteLine($" Ожидаем: True. Результат: {Test.CheckOrder(TestTree)}");
             Console.WriteLine($" 6) Проверяем наличие наименьшего введенного значения (1)");
             Console.WriteLine($" на начальной позиции первого листа дерева");
-            Console.WriteLine($" Ожидаем: True. Результат: {TestTree.CheckMinValuePosition(1)}");
+            Console.WriteLine($" Ожидаем: True. Результат: {Test.CheckMinValuePosition(TestTree, 1)}");
             Console.WriteLine($" 7) Проверяем наличие наибольшего введенного значения (9999)");
             Console.WriteLine($" на конечной позиции последнего листа дерева");
-            Console.WriteLine($" Ожидаем: True. Результат: {TestTree.CheckMaxValuePosition(9999)}");
+            Console.WriteLine($" Ожидаем: True. Результат: {Test.CheckMaxValuePosition(TestTree, 9999)}");
             Console.Read();                                     
         }
     }
