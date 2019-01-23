@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace B_Tree
 {
-    class B_Tree
+    class B_Tree<V> where V : IComparable<V>
     {
-        public Node root { get; private set; }
+        public Node<V> root { get; private set; }
         public int maxNodeSize { get; private set; }
         public B_Tree(int maxNodeSize)
         {
@@ -17,11 +17,11 @@ namespace B_Tree
                 Console.WriteLine(" Максимальный размер узла должен быть целым положительным числом не менее 3");
                 return;
             }
-            root = new Node(maxNodeSize, true);
+            root = new Node<V>(maxNodeSize, true);
             this.maxNodeSize = maxNodeSize;
         }        
         
-        public bool Insert(int val)
+        public bool Insert(V val)
         {    
             if (root.keysQty == 0)
             {
@@ -32,12 +32,12 @@ namespace B_Tree
 
             if (root.keysQty == maxNodeSize)
             {
-                Node newRoot = new Node(maxNodeSize, false);
+                Node<V> newRoot = new Node<V>(maxNodeSize, false);
                 newRoot.children[0] = root;
                 root.parent = newRoot;
-                Node newNode = SplitNode(root, 0);
+                Node<V> newNode = SplitNode(root, 0);
                 int i = 0;
-                if (val > newNode.keys[0])
+                if (val.CompareTo(newNode.keys[0]) > 0)
                 {
                     i++;
                 }
@@ -47,7 +47,7 @@ namespace B_Tree
 
             return InsertNonFullNode(root, val);
         }        
-        private bool InsertNonFullNode(Node node, int val)
+        private bool InsertNonFullNode(Node<V> node, V val)
         {
             if (CheckDuplicate(node, val))
             {
@@ -58,7 +58,7 @@ namespace B_Tree
             
             if (node.isLeaf)
             {
-                while (pos >= 0 && node.keys[pos] > val)
+                while (pos >= 0 && val.CompareTo(node.keys[pos]) < 0)
                 {
                     node.keys[pos + 1] = node.keys[pos];
                     pos--;
@@ -69,7 +69,7 @@ namespace B_Tree
             }
             else
             {
-                while (pos >= 0 && node.keys[pos] > val)
+                while (pos >= 0 && val.CompareTo(node.keys[pos]) < 0)
                 {
                     pos--;
                 }               
@@ -77,7 +77,7 @@ namespace B_Tree
                 if (node.children[pos + 1].keysQty == maxNodeSize)
                 { 
                     SplitNode(node.children[pos + 1], pos + 1);
-                    if (node.keys[pos + 1] < val)
+                    if (val.CompareTo(node.keys[pos + 1]) > 0)
                     {
                         pos++;
                     } 
@@ -85,16 +85,16 @@ namespace B_Tree
                 return InsertNonFullNode(node.children[pos + 1], val);
             }
         }        
-        private Node SplitNode(Node node, int pos)
+        private Node<V> SplitNode(Node<V> node, int pos)
         {
-            Node newNode = new Node(maxNodeSize, node.isLeaf);
+            Node<V> newNode = new Node<V>(maxNodeSize, node.isLeaf);
             newNode.keysQty = ((maxNodeSize + 1) / 2) - 1;
             newNode.parent = node.parent;
 
             for (int i = 0; i < ((maxNodeSize + 1) / 2) - 1; i++)
             {
                 newNode.keys[i] = node.keys[i + ((maxNodeSize + 1) / 2)];
-                node.keys[i + ((maxNodeSize + 1) / 2)] = 0;
+                node.keys[i + ((maxNodeSize + 1) / 2)] = default(V);
             }                
 
             if (!node.isLeaf)
@@ -122,31 +122,31 @@ namespace B_Tree
             }                
            
             node.parent.keys[pos] = node.keys[((maxNodeSize + 1) / 2) - 1];
-            node.keys[((maxNodeSize + 1) / 2) - 1] = 0;
+            node.keys[((maxNodeSize + 1) / 2) - 1] = default(V);
             node.parent.keysQty++;
 
             return newNode;
         }
-        private bool CheckDuplicate(Node node, int val)
+        private bool CheckDuplicate(Node<V> node, V val)
         {
             for (int i = 0; i < node.keysQty; i++)
             {
-                if (node.keys[i] == val)
+                if (val.CompareTo(node.keys[i]) == 0)
                 {
                     return true;
                 }
             }
             return false;
         }      
-        public bool Search(int val)
+        public bool Search(V val)
         {
             return searchInNode(root, val);
         }
-        private bool searchInNode(Node node, int val)
+        private bool searchInNode(Node<V> node, V val)
         {
             int pos = 0;
             int checkPos = 0;
-            while (pos < node.keysQty && val > node.keys[pos])
+            while (pos < node.keysQty && val.CompareTo(node.keys[pos]) > 0)
             {
                 pos++;
             }
@@ -158,7 +158,7 @@ namespace B_Tree
                 checkPos--;
             }
 
-            if (node.keys[checkPos] == val)
+            if (val.CompareTo(node.keys[checkPos]) == 0)
             {
                 return true;
             }

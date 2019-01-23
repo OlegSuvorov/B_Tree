@@ -6,15 +6,19 @@ using System.Threading.Tasks;
 
 namespace B_Tree
 {
-    static class Test
+    static class Test<V> where V : IComparable<V>
     {
-        public static bool CheckAllowedSize(B_Tree tree)
+        public static bool CheckAllowedSize(B_Tree<V> tree)
         {
             return CheckNodeSize(tree.root, tree.maxNodeSize);
         }
-        static bool CheckNodeSize(Node node, int maxNodeSize)
+        static bool CheckNodeSize(Node<V> node, int maxNodeSize)
         {
-            if (node.keysQty < ((maxNodeSize + 1) / 2) - 1 || node.keysQty > maxNodeSize)
+            if (
+                node.parent != null && node.keysQty < ((maxNodeSize + 1) / 2) - 1 ||
+                node.parent == null && node.keysQty < 1 ||
+                node.keysQty > maxNodeSize 
+                )
             {
                 return false;
             }
@@ -32,17 +36,17 @@ namespace B_Tree
 
             return true;
         }
-        public static bool CheckOrder(B_Tree tree)
+        public static bool CheckOrder(B_Tree<V> tree)
         {
             return CheckNodeOrder(tree.root);
         }
-        private static bool CheckNodeOrder(Node node)
+        private static bool CheckNodeOrder(Node<V> node)
         {
             if (node.keysQty >= 2)
             {
                 for (int i = 0; i < node.keysQty - 2; i++)
                 {
-                    if (node.keys[i] > node.keys[i + 1])
+                    if (node.keys[i].CompareTo(node.keys[i + 1]) > 0)
                     {
                         return false;
                     }
@@ -62,12 +66,12 @@ namespace B_Tree
 
             return true;
         }
-        public static bool CheckMinValuePosition(B_Tree tree, int val)
+        public static bool CheckMinValuePosition(B_Tree<V> tree, V val)
         {
-            Node firstLeaf = GetFirstLowestNode(tree.root);
-            return val == firstLeaf.keys[0];
+            Node<V> firstLeaf = GetFirstLowestNode(tree.root);
+            return val.CompareTo(firstLeaf.keys[0]) == 0;
         }
-        private static Node GetFirstLowestNode(Node node)
+        private static Node<V> GetFirstLowestNode(Node<V> node)
         {
             if (node.isLeaf)
             {
@@ -76,12 +80,12 @@ namespace B_Tree
 
             return GetFirstLowestNode(node.children[0]);
         }
-        public static bool CheckMaxValuePosition(B_Tree tree, int val)
+        public static bool CheckMaxValuePosition(B_Tree<V> tree, V val)
         {
-            Node lastLeaf = GetLastLowestNode(tree.root);
-            return val == lastLeaf.keys[lastLeaf.keysQty - 1];
+            Node<V> lastLeaf = GetLastLowestNode(tree.root);
+            return val.CompareTo(lastLeaf.keys[lastLeaf.keysQty - 1]) == 0;
         }
-        private static Node GetLastLowestNode(Node node)
+        private static Node<V> GetLastLowestNode(Node<V> node)
         {
             if (node.isLeaf)
             {
