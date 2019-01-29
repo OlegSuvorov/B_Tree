@@ -255,8 +255,25 @@ namespace B_Tree
         }
         void MergeNodes(Node<V> node, Node<V> rightSiblingNode)
         {
-            Console.WriteLine("Функция слияния в разработке");
-            // TBD
+            node.keys[node.keysQty] = node.parent.keys[Array.IndexOf(node.parent.children, node)];
+            node.keysQty++;
+            for (int i = node.keysQty, j = 0; j < rightSiblingNode.keysQty; i++, j++)
+            {
+                node.keys[i] = rightSiblingNode.keys[j];
+                node.keysQty++;
+            }
+            for (int i = Array.IndexOf(node.parent.children, node); i < node.parent.keysQty - 1; i++)
+            {
+                node.parent.keys[i] = node.parent.keys[i + 1];
+            }
+            node.parent.keys[node.parent.keysQty - 1] = default(V);
+            for (int i = Array.IndexOf(node.parent.children, node) + 1; i < node.parent.keysQty; i++)
+            {
+                node.parent.children[i] = node.parent.children[i + 1];
+            }
+            node.parent.children[node.parent.keysQty] = null;
+            node.parent.keysQty--;
+            // TBD replace children if they exist
         }
         void ReplaceFromDonateNode(Node<V> node, Node<V> nodeDonateNode)
         {
@@ -265,6 +282,7 @@ namespace B_Tree
                 node.keys[node.keysQty] = node.parent.keys[Array.IndexOf(node.parent.children, node)];               
                 node.parent.keys[Array.IndexOf(node.parent.children, node)] = nodeDonateNode.keys[0];
                 SimpleNodeDeleteVal(nodeDonateNode, nodeDonateNode.keys[0]);
+                // TBD replace children if they exist
             }
             else
             {
@@ -276,6 +294,7 @@ namespace B_Tree
                 node.parent.keys[Array.IndexOf(node.parent.children, node) - 1] = nodeDonateNode.keys[nodeDonateNode.keysQty - 1];
                 nodeDonateNode.keys[nodeDonateNode.keysQty - 1] = default(V);
                 nodeDonateNode.keysQty--;
+                // TBD replace children if they exist
             }
             node.keysQty++;
         }
