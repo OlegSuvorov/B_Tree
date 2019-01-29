@@ -77,7 +77,6 @@ namespace B_Tree
             {
                 return node;
             }
-
             return GetFirstLowestNode(node.children[0]);
         }
         public static bool CheckMaxValuePosition(B_Tree<V> tree, V val)
@@ -91,7 +90,6 @@ namespace B_Tree
             {
                 return node;
             }
-
             return GetLastLowestNode(node.children[node.keysQty]);
         }
     }
