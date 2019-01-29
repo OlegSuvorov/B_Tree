@@ -17,9 +17,9 @@ namespace B_Tree
         {
             children = new Node<V>[maxNodeSize + 1];
             keys = new V[maxNodeSize];
-            this.keysQty = 0;
+            keysQty = 0;
             this.isLeaf = isLeaf;
-            this.parent = null;
+            parent = null;
         }
     }
 }
