@@ -230,32 +230,54 @@ namespace B_Tree
                     root = node.children[0];
                     root.parent = null;
                 }
-                int nodePos = Array.IndexOf(node.parent.children, node);
-                Node<V> DonateNode = CheckDonator(node, nodePos);
-                if (DonateNode == null)
+                else
                 {
-                    if ((nodePos + 1) < maxNodeSize && node.parent.children[nodePos + 1] != null)
+                    int nodePos = Array.IndexOf(node.parent.children, node);
+                    Node<V> DonateNode = CheckDonator(node, nodePos);
+                    if (DonateNode == null)
                     {
-                        MergeNodes(node, node.parent.children[nodePos + 1]);
+                        if ((nodePos + 1) < maxNodeSize && node.parent.children[nodePos + 1] != null)
+                        {
+                            MergeNodes(node, node.parent.children[nodePos + 1]);
+                        }
+                        else
+                        {
+                            MergeNodes(node.parent.children[nodePos - 1], node);
+                        }
                     }
                     else
                     {
-                        MergeNodes(node.parent.children[nodePos - 1], node);
+                        ReplaceFromDonateNode(node, DonateNode);
                     }
                 }
-                else
-                {
-                    ReplaceFromDonateNode(node, DonateNode);
-                }
+               
             }
         }
         void MergeNodes(Node<V> node, Node<V> rightSiblingNode)
         {
+            Console.WriteLine("Функция слияния в разработке");
             // TBD
         }
         void ReplaceFromDonateNode(Node<V> node, Node<V> nodeDonateNode)
         {
-            // TBD
+            if (Array.IndexOf(node.parent.children, nodeDonateNode) > Array.IndexOf(node.parent.children, node))
+            {
+                node.keys[node.keysQty] = node.parent.keys[Array.IndexOf(node.parent.children, node)];               
+                node.parent.keys[Array.IndexOf(node.parent.children, node)] = nodeDonateNode.keys[0];
+                SimpleNodeDeleteVal(nodeDonateNode, nodeDonateNode.keys[0]);
+            }
+            else
+            {
+                for (int i = 0; i <= node.keysQty - 1; i++)
+                {
+                    node.keys[i + 1] = node.keys[i];
+                }
+                node.keys[0] = node.parent.keys[Array.IndexOf(node.parent.children, node) - 1];
+                node.parent.keys[Array.IndexOf(node.parent.children, node) - 1] = nodeDonateNode.keys[nodeDonateNode.keysQty - 1];
+                nodeDonateNode.keys[nodeDonateNode.keysQty - 1] = default(V);
+                nodeDonateNode.keysQty--;
+            }
+            node.keysQty++;
         }
         private void SimpleNodeDeleteVal(Node<V> node, V val)
         {
@@ -270,7 +292,7 @@ namespace B_Tree
         Node<V> CheckDonator(Node<V> node, int pos)
         {
             Node<V> LeftSibling = pos != 0 ? node.parent.children[pos - 1] : null;
-            Node<V> RightSibling = pos + 1 != node.parent.keysQty ? node.parent.children[pos + 1] : null;
+            Node<V> RightSibling = (pos + 1) != maxNodeSize ? node.parent.children[pos + 1] : null;
 
             if (RightSibling != null && RightSibling.keysQty >= (maxNodeSize + 1) / 2 &&
                 (LeftSibling == null || LeftSibling.keysQty < (maxNodeSize + 1) / 2))
