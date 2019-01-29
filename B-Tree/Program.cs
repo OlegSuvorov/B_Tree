@@ -89,8 +89,8 @@ namespace B_Tree
             }
 
             Console.WriteLine($" \n Тесты");
-            //Console.WriteLine($" 1) Проверяем операцию удаления значения 1");
-            Console.WriteLine($" Ожидаем: True. Результат: {TestIntTree.Delete(7)}");
+            Console.WriteLine($" Проверяем операцию удаления значения 5");
+            Console.WriteLine($" Ожидаем: True. Результат: {TestIntTree.Delete(5)}");
             Console.Read();
         }
     }
