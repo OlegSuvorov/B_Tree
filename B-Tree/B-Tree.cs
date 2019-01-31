@@ -19,10 +19,10 @@ namespace B_Tree
             }
             root = new Node<V>(maxNodeSize, true);
             this.maxNodeSize = maxNodeSize;
-        }        
-        
+        }
+
         public bool Insert(V val)
-        {    
+        {
             if (root.keysQty == 0)
             {
                 root.keys[0] = val;
@@ -46,7 +46,7 @@ namespace B_Tree
             }
 
             return InsertNonFullNode(root, val);
-        }        
+        }
         private bool InsertNonFullNode(Node<V> node, V val)
         {
             if (CheckDuplicate(node, val))
@@ -54,8 +54,8 @@ namespace B_Tree
                 return false;
             }
 
-            int pos = node.keysQty - 1;            
-            
+            int pos = node.keysQty - 1;
+
             if (node.isLeaf)
             {
                 while (pos >= 0 && val.CompareTo(node.keys[pos]) < 0)
@@ -72,7 +72,7 @@ namespace B_Tree
                 while (pos >= 0 && val.CompareTo(node.keys[pos]) < 0)
                 {
                     pos--;
-                }               
+                }
 
                 if (node.children[pos + 1].keysQty == maxNodeSize)
                 {
@@ -95,7 +95,7 @@ namespace B_Tree
             {
                 newNode.keys[i] = node.keys[i + ((maxNodeSize + 1) / 2)];
                 node.keys[i + ((maxNodeSize + 1) / 2)] = default(V);
-            }                
+            }
 
             if (!node.isLeaf)
             {
@@ -112,15 +112,15 @@ namespace B_Tree
             for (int i = node.parent.keysQty; i >= pos + 1; i--)
             {
                 node.parent.children[i + 1] = node.parent.children[i];
-            }                
+            }
 
             node.parent.children[pos + 1] = newNode;
 
             for (int i = node.parent.keysQty - 1; i >= pos; i--)
             {
                 node.parent.keys[i + 1] = node.parent.keys[i];
-            }                
-           
+            }
+
             node.parent.keys[pos] = node.keys[((maxNodeSize + 1) / 2) - 1];
             node.keys[((maxNodeSize + 1) / 2) - 1] = default(V);
             node.parent.keysQty++;
@@ -137,7 +137,7 @@ namespace B_Tree
                 }
             }
             return false;
-        }      
+        }
         public bool Search(V val)
         {
             return searchInNode(root, val);
@@ -176,185 +176,82 @@ namespace B_Tree
         }
         private bool DeleteInNode(Node<V> node, V val)
         {
-            int pos = FindPosition(node, val);
-            if (node.keys[pos].CompareTo(val) == 0)
+            bool valueExistInNode = node.CheckValExistence(val);
+            if (valueExistInNode)
             {
-                if (node.isLeaf)
-                {
-                    DeleteInLeaf(node, val);
-                }
-                else
-                {
-                    DeleteInNonLeaf(node, val);
-                }
+                DeleteInsideNode(node, val);
                 return true;
             }
-            else
-            {
-                if (node.isLeaf)
-                {
-                    return false;
-                }
-                else
-                {
-                    if (val.CompareTo(node.keys[pos]) > 0)
-                    {
-                        pos++;
-                    }
-                    return DeleteInNode(node.children[pos], val);
-                }               
-            }
+            return DeleteDeeperInNode(node, val);
+        }
+        private void DeleteInsideNode(Node<V> node, V val)
+        {
+            if (node.isLeaf) DeleteInLeaf(node, val);
+            else DeleteInNonLeaf(node, val);
+        }
+        private bool DeleteDeeperInNode(Node<V> node, V val)
+        {
+            if (node.isLeaf) return false;
+            int valuePosition = node.FindPosition(val);
+            if (val.CompareTo(node.keys[valuePosition]) > 0)
+                valuePosition++;
+            return DeleteInNode(node.children[valuePosition], val);
         }
         private void DeleteInNonLeaf(Node<V> node, V val)
         {
-            Node<V> LeafNode = FindNodeWithClosestVal(node, val);
+            Node<V> LeafNode = node.FindNodeWithClosestVal(val);
             node.keys[Array.IndexOf(node.keys, val)] = LeafNode.keys[0];
             DeleteInLeaf(LeafNode, LeafNode.keys[0]);
         }
         private void DeleteInLeaf(Node<V> node, V val)
         {
-            SimpleNodeDeleteVal(node, val);
+            int pos = Array.IndexOf(node.keys, val);
+            node.NodeDeleteVal(pos);
             CheckKeysQty(node);
         }
         void CheckKeysQty(Node<V> node)
         {
             int minQty = (node.parent == null ? 1 : ((maxNodeSize + 1) / 2) - 1);
             if (node.keysQty >= minQty)
+                return;
+            
+            if (node.parent == null)
             {
+                if (node.children[0] == null)
+                    return;
+                root = node.children[0];
+                root.parent = null;
                 return;
             }
-            else
-            {
-                if (node.parent == null)
-                {
-                    root = node.children[0];
-                    root.parent = null;
-                }
-                else
-                {
-                    int nodePos = Array.IndexOf(node.parent.children, node);
-                    Node<V> DonateNode = CheckDonator(node, nodePos);
-                    if (DonateNode == null)
-                    {
-                        if ((nodePos + 1) < maxNodeSize && node.parent.children[nodePos + 1] != null)
-                        {
-                            MergeNodes(node, node.parent.children[nodePos + 1]);
-                        }
-                        else
-                        {
-                            MergeNodes(node.parent.children[nodePos - 1], node);
-                        }
-                    }
-                    else
-                    {
-                        ReplaceFromDonateNode(node, DonateNode);
-                    }
-                }
-               
-            }
-        }
-        void MergeNodes(Node<V> node, Node<V> rightSiblingNode)
-        {
-            node.keys[node.keysQty] = node.parent.keys[Array.IndexOf(node.parent.children, node)];
-            node.keysQty++;
-            for (int i = node.keysQty, j = 0; j < rightSiblingNode.keysQty; i++, j++)
-            {
-                node.keys[i] = rightSiblingNode.keys[j];
-                node.keysQty++;
-            }
-            for (int i = Array.IndexOf(node.parent.children, node); i < node.parent.keysQty - 1; i++)
-            {
-                node.parent.keys[i] = node.parent.keys[i + 1];
-            }
-            node.parent.keys[node.parent.keysQty - 1] = default(V);
-            for (int i = Array.IndexOf(node.parent.children, node) + 1; i < node.parent.keysQty; i++)
-            {
-                node.parent.children[i] = node.parent.children[i + 1];
-            }
-            node.parent.children[node.parent.keysQty] = null;
-            node.parent.keysQty--;
-            // TBD replace children if they exist
-        }
-        void ReplaceFromDonateNode(Node<V> node, Node<V> nodeDonateNode)
-        {
-            if (Array.IndexOf(node.parent.children, nodeDonateNode) > Array.IndexOf(node.parent.children, node))
-            {
-                node.keys[node.keysQty] = node.parent.keys[Array.IndexOf(node.parent.children, node)];               
-                node.parent.keys[Array.IndexOf(node.parent.children, node)] = nodeDonateNode.keys[0];
-                SimpleNodeDeleteVal(nodeDonateNode, nodeDonateNode.keys[0]);
-                // TBD replace children if they exist
-            }
-            else
-            {
-                for (int i = 0; i <= node.keysQty - 1; i++)
-                {
-                    node.keys[i + 1] = node.keys[i];
-                }
-                node.keys[0] = node.parent.keys[Array.IndexOf(node.parent.children, node) - 1];
-                node.parent.keys[Array.IndexOf(node.parent.children, node) - 1] = nodeDonateNode.keys[nodeDonateNode.keysQty - 1];
-                nodeDonateNode.keys[nodeDonateNode.keysQty - 1] = default(V);
-                nodeDonateNode.keysQty--;
-                // TBD replace children if they exist
-            }
-            node.keysQty++;
-        }
-        private void SimpleNodeDeleteVal(Node<V> node, V val)
-        {
-            int pos = Array.IndexOf(node.keys, val);
-            for (int i = pos; i < node.keysQty - 1; i++)
-            {
-                node.keys[i] = node.keys[i + 1];
-            }
-            node.keys[node.keysQty - 1] = default(V);
-            node.keysQty--;
-        }
-        Node<V> CheckDonator(Node<V> node, int pos)
-        {
-            Node<V> LeftSibling = pos != 0 ? node.parent.children[pos - 1] : null;
-            Node<V> RightSibling = (pos + 1) != maxNodeSize ? node.parent.children[pos + 1] : null;
+            int nodePos = Array.IndexOf(node.parent.children, node);
+            bool isFullRightSibling = node.CheckRightSibling(nodePos);
+            bool isFullLeftSibling = node.CheckLeftSibling(nodePos); ;
 
-            if (RightSibling != null && RightSibling.keysQty >= (maxNodeSize + 1) / 2 &&
-                (LeftSibling == null || LeftSibling.keysQty < (maxNodeSize + 1) / 2))
-            {
-                return RightSibling;
-            }
-            else if (LeftSibling != null && LeftSibling.keysQty >= (maxNodeSize + 1) / 2 && 
-                    (RightSibling == null || RightSibling.keysQty < (maxNodeSize + 1) / 2))
-            {
-                return LeftSibling;
-            }
-            else if (RightSibling != null && RightSibling.keysQty >= (maxNodeSize + 1) / 2 &&
-                    LeftSibling != null && LeftSibling.keysQty >= (maxNodeSize + 1) / 2)
-            {
-                return RightSibling.keysQty > LeftSibling.keysQty ? RightSibling : LeftSibling;
-            }
+            if (isFullRightSibling)
+                node.ReplaceFromRightNode(node.parent, nodePos);
+            else if (isFullLeftSibling)
+                node.ReplaceFromLeftNode(node.parent, nodePos);
             else
-            {
-                return null;
-            }
+                MergeNodes(node.parent, nodePos);
         }
-        Node<V> FindNodeWithClosestVal(Node<V> node, V val)
+        void MergeNodes(Node<V> node, int nodePos)
         {
-            int pos = Array.IndexOf(node.keys, val);
-            Node<V> foundNode = node.children[pos + 1];           
-            return GetFirstLowestNode(foundNode);
-        }
-        private Node<V> GetFirstLowestNode(Node<V> node)
-        {
-            if (node.isLeaf)
+            if (nodePos == node.keysQty)
+                nodePos--;
+            var leftNode = node.children[nodePos];
+            var rightNode = node.children[nodePos + 1];
+            if (!leftNode.isLeaf)
             {
-                return node;
+                leftNode.MergeChildren(rightNode);
             }
-            return GetFirstLowestNode(node.children[0]);
-        }
-        private int FindPosition(Node<V> node, V val)
-        {
-            int pos = 0;
-            while( pos < node.keysQty - 1 && node.keys[pos].CompareTo(val) < 0)
+            leftNode.AddKey(node.keys[nodePos]);
+            for (int i = leftNode.keysQty, j = 0; j < rightNode.keysQty; i++, j++)
             {
-                pos++;
+                leftNode.AddKey(rightNode.keys[j]);
             }
-            return pos;
+            node.NodeDeleteChild(nodePos + 1);
+            node.NodeDeleteVal(nodePos);
+            CheckKeysQty(node);            
         }
     }
 }
