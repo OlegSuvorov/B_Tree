@@ -222,8 +222,9 @@ namespace B_Tree
                 for (int i= 0; i < child.keysQty + 1; i++)
                 {                
                     children[i] = child.children[i];
+                    children[i].parent = this;
                 }
-            }           
+            }            
         }
     }
 }

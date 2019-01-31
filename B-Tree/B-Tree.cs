@@ -150,24 +150,19 @@ namespace B_Tree
             {
                 pos++;
             }
-
             checkPos = pos;
-
             if (pos == maxNodeSize)
             {
                 checkPos--;
             }
-
             if (val.CompareTo(node.keys[checkPos]) == 0)
             {
                 return true;
             }
-
             if (node.isLeaf)
             {
                 return false;
             }
-
             return searchInNode(node.children[pos], val);
         }
         public bool Delete(V val)
