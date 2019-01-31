@@ -129,6 +129,102 @@ namespace B_Tree
                 siblingNode.children[j].parent = this;
             }
         }
+        public bool DeleteInNode(V val)
+        {
+            bool valueExistInNode = CheckValExistence(val);
+            if (valueExistInNode)
+            {
+                if (isLeaf)
+                    DeleteInLeaf(val);
+                else
+                    DeleteInNonLeaf(val);
+                return true;
+            }
+            return DeleteDeeperInNode(val);
+        }
+        private bool DeleteDeeperInNode(V val)
+        {
+            if (isLeaf)
+                return false;
+            int valuePosition = FindPosition(val);
+            if (val.CompareTo(keys[valuePosition]) > 0)
+                valuePosition++;
+            return children[valuePosition].DeleteInNode(val);
+        }
+        private void DeleteInNonLeaf(V val)
+        {
+            Node<V> LeafNode = FindNodeWithClosestVal(val);
+            keys[Array.IndexOf(keys, val)] = LeafNode.keys[0];
+            LeafNode.DeleteInLeaf(LeafNode.keys[0]);
+        }
+        private void DeleteInLeaf(V val)
+        {
+            int pos = Array.IndexOf(keys, val);
+            NodeDeleteVal(pos);
+            CheckKeysQty();
+        }
+        private void CheckKeysQty()
+        {
+            int minQty = (parent == null ? 1 : (children.Length / 2) - 1);
+            if (keysQty >= minQty)
+                return;
+
+            if (parent == null)
+            {
+                if (children[0] == null)
+                {
+                    return;
+                }                    
+                fillRoot();
+                return;
+            }
+            int nodePos = Array.IndexOf(parent.children, this);
+            bool isFullRightSibling = CheckRightSibling(nodePos);
+            bool isFullLeftSibling = CheckLeftSibling(nodePos);
+
+            if (isFullRightSibling)
+                ReplaceFromRightNode(parent, nodePos);
+            else if (isFullLeftSibling)
+                ReplaceFromLeftNode(parent, nodePos);
+            else
+                parent.MergeNodes(nodePos);
+        }
+        void MergeNodes(int nodePos)
+        {
+            if (nodePos == keysQty)
+                nodePos--;
+            var leftNode = children[nodePos];
+            var rightNode = children[nodePos + 1];
+            if (!leftNode.isLeaf)
+            {
+                leftNode.MergeChildren(rightNode);
+            }
+            leftNode.AddKey(keys[nodePos]);
+            for (int j = 0; j < rightNode.keysQty; j++)
+            {
+                leftNode.AddKey(rightNode.keys[j]);
+            }
+            NodeDeleteChild(nodePos + 1);
+            NodeDeleteVal(nodePos);
+            CheckKeysQty();
+        }
+        private void fillRoot()
+        {
+            var child = children[0];
+            for (int i= 0; i < child.keysQty; i++)
+            {
+                keys[i] = child.keys[i];
+            }
+            keysQty = child.keysQty;
+            isLeaf = child.isLeaf;
+            if (!child.isLeaf)
+            {
+                for (int i= 0; i < child.keysQty + 1; i++)
+                {                
+                    children[i] = child.children[i];
+                }
+            }           
+        }
     }
 }
 

@@ -86,9 +86,9 @@ namespace B_Tree
             bool isRestExist = true;
             for (int i = 1; i < 500; i++)
             {
-            if (i == 255) continue;
-            if (!TestIntTree.Search(i))
-                isRestExist = false;
+                if (i == 255) continue;
+                if (!TestIntTree.Search(i))
+                    isRestExist = false;
             }
             Console.WriteLine($" Ожидаем: True. Результат: {isRestExist}");
             Console.WriteLine($" 4) Проверяем дерево на максимально и минимально");
