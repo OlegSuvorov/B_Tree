@@ -91,6 +91,18 @@ namespace B_Tree
                 isRestExist = false;
             }
             Console.WriteLine($" Ожидаем: True. Результат: {isRestExist}");
+            Console.WriteLine($" 4) Проверяем дерево на максимально и минимально");
+            Console.WriteLine($" допустимый размер массива значений в узлах");
+            Console.WriteLine($" Ожидаем: True. Результат: {Test<int>.CheckAllowedSize(TestIntTree)}");
+            Console.WriteLine($" 5) Проверяем узлы дерева на упорядоченность ");
+            Console.WriteLine($" элементов по возрастанию");
+            Console.WriteLine($" Ожидаем: True. Результат: {Test<int>.CheckOrder(TestIntTree)}");
+            Console.WriteLine($" 6) Проверяем наличие наименьшего введенного значения (1)");
+            Console.WriteLine($" на начальной позиции первого листа дерева");
+            Console.WriteLine($" Ожидаем: True. Результат: {Test<int>.CheckMinValuePosition(TestIntTree, 1)}");
+            Console.WriteLine($" 7) Проверяем наличие наибольшего введенного значения (499)");
+            Console.WriteLine($" на конечной позиции последнего листа дерева");
+            Console.WriteLine($" Ожидаем: True. Результат: {Test<int>.CheckMaxValuePosition(TestIntTree, 499)}");
 
             Console.WriteLine(" \nТест удаления из символьного дерева");
             Console.WriteLine($" 1) Удаляем значение k");
@@ -106,6 +118,18 @@ namespace B_Tree
                     isCharRestExist = false;
             }
             Console.WriteLine($" Ожидаем: True. Результат: {isCharRestExist}");
+            Console.WriteLine($" 4) Проверяем дерево на максимально и минимально");
+            Console.WriteLine($" допустимый размер массива значений в узлах");
+            Console.WriteLine($" Ожидаем: True. Результат: {Test<char>.CheckAllowedSize(TestStrTree)}");
+            Console.WriteLine($" 5) Проверяем узлы дерева на упорядоченность ");
+            Console.WriteLine($" элементов по возрастанию");
+            Console.WriteLine($" Ожидаем: True. Результат: {Test<char>.CheckOrder(TestStrTree)}");
+            Console.WriteLine($" 6) Проверяем наличие наименьшего введенного значения (a)");
+            Console.WriteLine($" на начальной позиции первого листа дерева");
+            Console.WriteLine($" Ожидаем: True. Результат: {Test<char>.CheckMinValuePosition(TestStrTree, 'a')}");
+            Console.WriteLine($" 7) Проверяем наличие наибольшего введенного значения (z)");
+            Console.WriteLine($" на конечной позиции последнего листа дерева");
+            Console.WriteLine($" Ожидаем: True. Результат: {Test<char>.CheckMaxValuePosition(TestStrTree, 'z')}");
             Console.Read();
         }
     }
