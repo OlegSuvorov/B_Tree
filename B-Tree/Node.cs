@@ -36,7 +36,7 @@ namespace B_Tree
         public int FindPosition(V val)
         {
             int pos = 0;
-            while (pos < keysQty - 1 && keys[pos].CompareTo(val) < 0)
+            while (pos < keysQty - 1 && Match(pos, val) > 0)
                 pos++;
             return pos;
         }
@@ -104,10 +104,11 @@ namespace B_Tree
         }
         public void MergeChildren(Node<V> siblingNode)
         {
-            for (int i = keysQty + 1, j = 0; j < siblingNode.keysQty + 1; i++, j++)
+            int childrenQty = keysQty + 1;
+            for (int i = 0; i < siblingNode.keysQty + 1; i++)
             {
-                children[i] = siblingNode.children[j];
-                siblingNode.children[j].parent = this;
+                children[i + childrenQty] = siblingNode.children[i];
+                siblingNode.children[i].parent = this;
             }
         }
         public bool DeleteInNode(V val)
@@ -128,7 +129,7 @@ namespace B_Tree
             if (isLeaf)
                 return false;
             int valuePosition = FindPosition(val);
-            if (val.CompareTo(keys[valuePosition]) > 0)
+            if (Match(valuePosition, val) > 0)
                 valuePosition++;
             return children[valuePosition].DeleteInNode(val);
         }
@@ -149,23 +150,19 @@ namespace B_Tree
             int minQty = (parent == null ? 1 : (children.Length / 2) - 1);
             if (keysQty >= minQty)
                 return;
-
             if (parent == null)
             {
-                if (children[0] == null)
-                    return;          
-                fillRoot();
+                if (children[0] != null)   
+                    fillRoot();
                 return;
             }
-            int nodePos = GetNodePosition(parent.children, this);
-            bool isFullRightSibling = CheckRightSibling(nodePos);
-            if (isFullRightSibling)
+            int nodePos = GetNodePosition(parent.children, this);            
+            if (CheckRightSibling(nodePos))
             {
                 ReplaceFromRightNode(parent, nodePos);
                 return;
-            }
-            bool isFullLeftSibling = CheckLeftSibling(nodePos);
-            if (isFullLeftSibling)
+            }           
+            if (CheckLeftSibling(nodePos))
             {
                 ReplaceFromLeftNode(parent, nodePos);
                 return;
@@ -183,10 +180,7 @@ namespace B_Tree
                 leftNode.MergeChildren(rightNode);
             }
             leftNode.AddKey(keys[nodePos]);
-            for (int j = 0; j < rightNode.keysQty; j++)
-            {
-                leftNode.AddKey(rightNode.keys[j]);
-            }
+            leftNode.CopyValuesFromAnotherNode(rightNode);          
             NodeDeleteChild(nodePos + 1);
             NodeDeleteVal(nodePos);
             CheckKeysQty();
@@ -194,36 +188,42 @@ namespace B_Tree
         private void fillRoot()
         {
             var child = children[0];
-            for (int i= 0; i < child.keysQty; i++)
-            {
-                keys[i] = child.keys[i];
-            }
-            keysQty = child.keysQty;
+            CopyValuesFromAnotherNode(child);
             isLeaf = child.isLeaf;
             if (!child.isLeaf)
             {
-                for (int i= 0; i < child.keysQty + 1; i++)
-                {                
-                    children[i] = child.children[i];
-                    children[i].parent = this;
-                }
+                CopyChildrenFromAnotherNode(child);
             }            
+        }
+        private void CopyValuesFromAnotherNode(Node<V> anotherNode)
+        {
+            for (int i = 0; i < anotherNode.keysQty; i++)
+            {
+                keys[i + keysQty] = anotherNode.keys[i];                
+            }
+            keysQty += anotherNode.keysQty;
+        }
+        private void CopyChildrenFromAnotherNode(Node<V> anotherNode)
+        {
+            for (int i = 0; i <= anotherNode.keysQty; i++)
+            {
+                children[i] = anotherNode.children[i];
+                children[i].parent = this;
+            }
         }
         public Node<V> GetNextNode(V val)
         {
-            int i = 0;
-            if (val.CompareTo(keys[0]) > 0)
-                i++;
+            int i = Match(0, val) > 0 ? 1 : 0;            
             return children[i];
         }
-        public bool InsertNonFullNode(V val)
+        public bool InsertNonFullNode(V val) // TBD refactoring
         {
             if (CheckDuplicate(val))
                 return false;
             int pos = keysQty - 1;
             if (isLeaf)
             {
-                while (pos >= 0 && val.CompareTo(keys[pos]) < 0)
+                while (pos >= 0 && Match(pos, val) < 0)
                 {
                     keys[pos + 1] = keys[pos];
                     pos--;
@@ -232,24 +232,21 @@ namespace B_Tree
                 keysQty++;
                 return true;
             }
-            else
+            while (pos >= 0 && Match(pos, val) < 0)
+                pos--;
+            if (children[pos + 1].keysQty == keys.Length)
             {
-                while (pos >= 0 && val.CompareTo(keys[pos]) < 0)
-                    pos--;
-                if (children[pos + 1].keysQty == keys.Length)
-                {
-                    children[pos + 1].SplitNode(pos + 1);
-                    if (val.CompareTo(keys[pos + 1]) > 0)
-                        pos++;
-                }
-                return children[pos + 1].InsertNonFullNode(val);
+                children[pos + 1].SplitNode(pos + 1);
+                if (Match(pos + 1, val) > 0)
+                    pos++;
             }
+            return children[pos + 1].InsertNonFullNode(val);
         }
         private bool CheckDuplicate(V val)
         {
             for (int i = 0; i < keysQty; i++)
             {
-                if (val.CompareTo(keys[i]) == 0)
+                if (Match(i, val) == 0)
                     return true;
             }
             return false;
@@ -276,12 +273,12 @@ namespace B_Tree
         {
             int pos = 0;
             int checkPos = 0;
-            while (pos < keysQty && val.CompareTo(keys[pos]) > 0)
+            while (pos < keysQty && Match(pos, val) > 0)
                 pos++;
             checkPos = pos;
             if (pos == keys.Length)
                 checkPos--;
-            if (val.CompareTo(keys[checkPos]) == 0)
+            if (Match(checkPos, val) == 0)
                 return true;
             if (isLeaf)
                 return false;
@@ -295,20 +292,20 @@ namespace B_Tree
         {
             return Array.IndexOf(arr, node);
         }
-        private void SplitChildren(Node<V> SiblingNode, int minQty)
+        private void SplitChildren(Node<V> siblingNode, int minQty)
         {
             for (int i = 0; i < minQty; i++)
             {
-                SiblingNode.children[i] = children[i + minQty];
-                SiblingNode.children[i].parent = SiblingNode;
+                siblingNode.children[i] = children[i + minQty];
+                siblingNode.children[i].parent = siblingNode;
                 children[i + minQty] = null;
             }
         }
-        private void SplitKeys(Node<V> SiblingNode, int minQty)
+        private void SplitKeys(Node<V> siblingNode, int minQty)
         {
             for (int i = 0; i < minQty - 1; i++)
             {
-                SiblingNode.keys[i] = keys[i + minQty];
+                siblingNode.keys[i] = keys[i + minQty];
                 keys[i + minQty] = default(V);
             }
         }
@@ -333,17 +330,10 @@ namespace B_Tree
         public Node<V> TransformToChild()
         {
             Node<V> childRoot = new Node<V>(keys.Length, isLeaf);
-            for (int i = 0; i < keysQty; i++)
-            {
-                childRoot.keys[i] = keys[i];
-            }           
+            childRoot.CopyValuesFromAnotherNode(this);
             if (!isLeaf)
-            {
-                for (int i = 0; i <= keysQty; i++)
-                {
-                    childRoot.children[i] = children[i];
-                    children[i].parent = childRoot;
-                }
+            {               
+                childRoot.CopyChildrenFromAnotherNode(this);
                 children = new Node<V>[children.Length];
             }
             keys = new V[keys.Length];
@@ -352,6 +342,10 @@ namespace B_Tree
             childRoot.parent = this;
             isLeaf = false;
             return childRoot;
+        }
+        private int Match(int pos, V val)
+        {
+            return val.CompareTo(keys[pos]);
         }
     }
 }
