@@ -26,16 +26,7 @@ namespace B_Tree
             int pos = GetValPosition(keys, val);
             Node<V> foundNode = children[pos + 1];
             return foundNode.GetFirstLowestNode();
-        }
-        public void NodeDeleteVal(int valPosition)
-        {            
-            for (int i = valPosition; i < keysQty - 1; i++)
-            {
-                keys[i] = keys[i + 1];
-            }
-            keys[keysQty - 1] = default(V);
-            keysQty--;
-        }
+        }        
         public Node<V> GetFirstLowestNode()
         {
             if (isLeaf)
@@ -72,8 +63,7 @@ namespace B_Tree
         {
             var incompleteNode = node.children[nodePos];
             var donateNode = node.children[nodePos - 1];
-            incompleteNode.NodeFreeChildrenPosition(0);
-            incompleteNode.NodeFreeValPosition(0);            
+            incompleteNode.FreePlaceForValAndChildrenInsert(0);                    
             incompleteNode.keys[0] = node.keys[nodePos - 1];
             node.keys[nodePos - 1] = donateNode.keys[donateNode.keysQty - 1];
             incompleteNode.children[0] = donateNode.children[donateNode.keysQty];            
@@ -89,20 +79,15 @@ namespace B_Tree
             }
             children[keysQty] = null;           
         }
-        public void NodeFreeValPosition(int pos)
-        {
-            for (int i = keysQty; i > pos; i--)
-            {
-                keys[i] = keys[i - 1];
-            }
-            keysQty++;
-        }
-        public void NodeFreeChildrenPosition(int pos)
+        public void FreePlaceForValAndChildrenInsert(int pos)
         {
             for (int i = keysQty + 1; i > pos; i--)
             {
                 children[i] = children[i - 1];
+                if (i != keysQty + 1)
+                    keys[i] = keys[i - 1];
             }
+            keysQty++;
         }
         public void AddKey(V key)
         {
@@ -168,9 +153,7 @@ namespace B_Tree
             if (parent == null)
             {
                 if (children[0] == null)
-                {
-                    return;
-                }                    
+                    return;          
                 fillRoot();
                 return;
             }
@@ -338,6 +321,37 @@ namespace B_Tree
                     keys[i + 1] = keys[i];
             }
         }
+        public void NodeDeleteVal(int valPosition)
+        {
+            for (int i = valPosition; i < keysQty - 1; i++)
+            {
+                keys[i] = keys[i + 1];
+            }
+            keys[keysQty - 1] = default(V);
+            keysQty--;
+        }
+        public Node<V> TransformToChild()
+        {
+            Node<V> childRoot = new Node<V>(keys.Length, isLeaf);
+            for (int i = 0; i < keysQty; i++)
+            {
+                childRoot.keys[i] = keys[i];
+            }           
+            if (!isLeaf)
+            {
+                for (int i = 0; i <= keysQty; i++)
+                {
+                    childRoot.children[i] = children[i];
+                    children[i].parent = childRoot;
+                }
+                children = new Node<V>[children.Length];
+            }
+            keys = new V[keys.Length];
+            keysQty = 0;
+            children[0] = childRoot;
+            childRoot.parent = this;
+            isLeaf = false;
+            return childRoot;
+        }
     }
 }
-

@@ -30,21 +30,13 @@ namespace B_Tree
             }
             if (root.keysQty == maxNodeSize)
             {               
-                Node<V> oldRoot = TransformToChild(root);
+                Node<V> oldRoot = root.TransformToChild();
                 Node<V> newRootChild = oldRoot.SplitNode(0);
                 Node<V> NextNodeForInsert = root.GetNextNode(val);
                 return NextNodeForInsert.InsertNonFullNode(val);
             }
             return root.InsertNonFullNode(val);
         }
-        private Node<V> TransformToChild(Node<V> node)
-        {
-            Node<V> newRoot = new Node<V>(maxNodeSize, false);
-            newRoot.children[0] = node;
-            node.parent = newRoot;
-            root = newRoot;
-            return node;
-        }       
         public bool Search(V val)
         {
             return root.searchInNode(val);
