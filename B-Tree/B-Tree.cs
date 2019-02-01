@@ -32,8 +32,8 @@ namespace B_Tree
             {               
                 Node<V> oldRoot = TransformToChild(root);
                 Node<V> newRootChild = oldRoot.SplitNode(0);
-                Node<V> NextNode = root.GetNextNode(val);
-                return NextNode.InsertNonFullNode(val);
+                Node<V> NextNodeForInsert = root.GetNextNode(val);
+                return NextNodeForInsert.InsertNonFullNode(val);
             }
             return root.InsertNonFullNode(val);
         }
