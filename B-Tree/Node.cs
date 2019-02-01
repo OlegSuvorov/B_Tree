@@ -236,12 +236,8 @@ namespace B_Tree
         public bool InsertNonFullNode(V val)
         {
             if (CheckDuplicate(val))
-            {
                 return false;
-            }
-
             int pos = keysQty - 1;
-
             if (isLeaf)
             {
                 while (pos >= 0 && val.CompareTo(keys[pos]) < 0)
@@ -256,17 +252,12 @@ namespace B_Tree
             else
             {
                 while (pos >= 0 && val.CompareTo(keys[pos]) < 0)
-                {
                     pos--;
-                }
-
                 if (children[pos + 1].keysQty == keys.Length)
                 {
                     children[pos + 1].SplitNode(pos + 1);
                     if (val.CompareTo(keys[pos + 1]) > 0)
-                    {
                         pos++;
-                    }
                 }
                 return children[pos + 1].InsertNonFullNode(val);
             }
@@ -283,38 +274,18 @@ namespace B_Tree
         public Node<V> SplitNode(int pos)
         {
             Node<V> newNode = new Node<V>(keys.Length, isLeaf);
-            newNode.keysQty = (children.Length / 2) - 1;
+            int MinAllowedChildrenQty = children.Length / 2;
+            int MinAllowedKeysQty = (children.Length / 2) - 1;
+            newNode.keysQty = MinAllowedKeysQty;
             newNode.parent = parent;
-
-            for (int i = 0; i < (children.Length / 2) - 1; i++)
-            {
-                newNode.keys[i] = keys[i + (children.Length / 2)];
-                keys[i + (children.Length / 2)] = default(V);
-            }
-
+            SplitKeys(newNode, MinAllowedChildrenQty);           
             if (!isLeaf)
-            {
-                for (int i = 0; i < (children.Length / 2); i++)
-                {
-                    newNode.children[i] = children[i + (children.Length / 2)];
-                    newNode.children[i].parent = newNode;
-                    children[i + (children.Length / 2)] = null;
-                }
-            }
-
-            keysQty = (children.Length / 2) - 1;
-
-            for (int i = parent.keysQty; i >= pos + 1; i--)
-            {
-                parent.children[i + 1] = parent.children[i];
-            }
+                SplitChildren(newNode, MinAllowedChildrenQty);
+            keysQty = MinAllowedKeysQty;
+            parent.RemoveKeyAndChildOnPosition(pos);
             parent.children[pos + 1] = newNode;
-            for (int i = parent.keysQty - 1; i >= pos; i--)
-            {
-                parent.keys[i + 1] = parent.keys[i];
-            }
-            parent.keys[pos] = keys[(children.Length / 2) - 1];
-            keys[(children.Length / 2) - 1] = default(V);
+            parent.keys[pos] = keys[MinAllowedKeysQty];
+            keys[MinAllowedKeysQty] = default(V);
             parent.keysQty++;
             return newNode;
         }
@@ -340,6 +311,32 @@ namespace B_Tree
         private int GetNodePosition(Array arr, Node<V> node)
         {
             return Array.IndexOf(arr, node);
+        }
+        private void SplitChildren(Node<V> SiblingNode, int minQty)
+        {
+            for (int i = 0; i < minQty; i++)
+            {
+                SiblingNode.children[i] = children[i + minQty];
+                SiblingNode.children[i].parent = SiblingNode;
+                children[i + minQty] = null;
+            }
+        }
+        private void SplitKeys(Node<V> SiblingNode, int minQty)
+        {
+            for (int i = 0; i < minQty - 1; i++)
+            {
+                SiblingNode.keys[i] = keys[i + minQty];
+                keys[i + minQty] = default(V);
+            }
+        }
+        private void RemoveKeyAndChildOnPosition(int pos)
+        {
+            for (int i = keysQty; i >= pos + 1; i--)
+            {
+                children[i + 1] = children[i];
+                if(i != pos + 1)
+                    keys[i + 1] = keys[i];
+            }
         }
     }
 }
