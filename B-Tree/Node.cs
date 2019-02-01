@@ -23,7 +23,7 @@ namespace B_Tree
         }        
         public Node<V> FindNodeWithClosestVal(V val)
         {
-            int pos = Array.IndexOf(keys, val);
+            int pos = GetValPosition(keys, val);
             Node<V> foundNode = children[pos + 1];
             return foundNode.GetFirstLowestNode();
         }
@@ -39,23 +39,19 @@ namespace B_Tree
         public Node<V> GetFirstLowestNode()
         {
             if (isLeaf)
-            {
                 return this;
-            }
             return children[0].GetFirstLowestNode();
         }       
         public int FindPosition(V val)
         {
             int pos = 0;
             while (pos < keysQty - 1 && keys[pos].CompareTo(val) < 0)
-            {
                 pos++;
-            }
             return pos;
         }
         public bool CheckValExistence(V val)
         {            
-            return Array.IndexOf(keys, val) >= 0;
+            return GetValPosition(keys, val) > -1;
         }
         public void ReplaceFromRightNode(Node<V> node, int nodePos)
         {
@@ -154,12 +150,12 @@ namespace B_Tree
         private void DeleteInNonLeaf(V val)
         {
             Node<V> LeafNode = FindNodeWithClosestVal(val);
-            keys[Array.IndexOf(keys, val)] = LeafNode.keys[0];
+            keys[GetValPosition(keys, val)] = LeafNode.keys[0];
             LeafNode.DeleteInLeaf(LeafNode.keys[0]);
         }
         private void DeleteInLeaf(V val)
         {
-            int pos = Array.IndexOf(keys, val);
+            int pos = GetValPosition(keys, val);
             NodeDeleteVal(pos);
             CheckKeysQty();
         }
@@ -178,16 +174,20 @@ namespace B_Tree
                 fillRoot();
                 return;
             }
-            int nodePos = Array.IndexOf(parent.children, this);
+            int nodePos = GetNodePosition(parent.children, this);
             bool isFullRightSibling = CheckRightSibling(nodePos);
-            bool isFullLeftSibling = CheckLeftSibling(nodePos);
-
             if (isFullRightSibling)
+            {
                 ReplaceFromRightNode(parent, nodePos);
-            else if (isFullLeftSibling)
+                return;
+            }
+            bool isFullLeftSibling = CheckLeftSibling(nodePos);
+            if (isFullLeftSibling)
+            {
                 ReplaceFromLeftNode(parent, nodePos);
-            else
-                parent.MergeNodes(nodePos);
+                return;
+            }
+            parent.MergeNodes(nodePos);
         }
         void MergeNodes(int nodePos)
         {
@@ -332,6 +332,14 @@ namespace B_Tree
             if (isLeaf)
                 return false;
             return children[pos].searchInNode(val);
+        }
+        private int GetValPosition(Array arr, V val)
+        {
+            return Array.IndexOf(arr, val);
+        }
+        private int GetNodePosition(Array arr, Node<V> node)
+        {
+            return Array.IndexOf(arr, node);
         }
     }
 }
