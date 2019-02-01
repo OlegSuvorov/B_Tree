@@ -226,6 +226,113 @@ namespace B_Tree
                 }
             }            
         }
+        public Node<V> GetNextNode(V val)
+        {
+            int i = 0;
+            if (val.CompareTo(keys[0]) > 0)
+                i++;
+            return children[i];
+        }
+        public bool InsertNonFullNode(V val)
+        {
+            if (CheckDuplicate(val))
+            {
+                return false;
+            }
+
+            int pos = keysQty - 1;
+
+            if (isLeaf)
+            {
+                while (pos >= 0 && val.CompareTo(keys[pos]) < 0)
+                {
+                    keys[pos + 1] = keys[pos];
+                    pos--;
+                }
+                keys[pos + 1] = val;
+                keysQty++;
+                return true;
+            }
+            else
+            {
+                while (pos >= 0 && val.CompareTo(keys[pos]) < 0)
+                {
+                    pos--;
+                }
+
+                if (children[pos + 1].keysQty == keys.Length)
+                {
+                    children[pos + 1].SplitNode(pos + 1);
+                    if (val.CompareTo(keys[pos + 1]) > 0)
+                    {
+                        pos++;
+                    }
+                }
+                return children[pos + 1].InsertNonFullNode(val);
+            }
+        }
+        private bool CheckDuplicate(V val)
+        {
+            for (int i = 0; i < keysQty; i++)
+            {
+                if (val.CompareTo(keys[i]) == 0)
+                    return true;
+            }
+            return false;
+        }
+        public Node<V> SplitNode(int pos)
+        {
+            Node<V> newNode = new Node<V>(keys.Length, isLeaf);
+            newNode.keysQty = (children.Length / 2) - 1;
+            newNode.parent = parent;
+
+            for (int i = 0; i < (children.Length / 2) - 1; i++)
+            {
+                newNode.keys[i] = keys[i + (children.Length / 2)];
+                keys[i + (children.Length / 2)] = default(V);
+            }
+
+            if (!isLeaf)
+            {
+                for (int i = 0; i < (children.Length / 2); i++)
+                {
+                    newNode.children[i] = children[i + (children.Length / 2)];
+                    newNode.children[i].parent = newNode;
+                    children[i + (children.Length / 2)] = null;
+                }
+            }
+
+            keysQty = (children.Length / 2) - 1;
+
+            for (int i = parent.keysQty; i >= pos + 1; i--)
+            {
+                parent.children[i + 1] = parent.children[i];
+            }
+            parent.children[pos + 1] = newNode;
+            for (int i = parent.keysQty - 1; i >= pos; i--)
+            {
+                parent.keys[i + 1] = parent.keys[i];
+            }
+            parent.keys[pos] = keys[(children.Length / 2) - 1];
+            keys[(children.Length / 2) - 1] = default(V);
+            parent.keysQty++;
+            return newNode;
+        }
+        public bool searchInNode(V val)
+        {
+            int pos = 0;
+            int checkPos = 0;
+            while (pos < keysQty && val.CompareTo(keys[pos]) > 0)
+                pos++;
+            checkPos = pos;
+            if (pos == keys.Length)
+                checkPos--;
+            if (val.CompareTo(keys[checkPos]) == 0)
+                return true;
+            if (isLeaf)
+                return false;
+            return children[pos].searchInNode(val);
+        }
     }
 }
 
