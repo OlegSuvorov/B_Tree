@@ -261,8 +261,29 @@ namespace B_Tree
             FillNewNode(newNode, minChildrenQty);
             if (!isLeaf)
                 SplitChildren(newNode, minChildrenQty);
-            parent.ReplaceKeysAndChildren(pos, minKeysQty, newNode);
+            replaceKeyAndChildrenToParent(pos, minKeysQty, newNode);
             return newNode;
+        }
+        private void replaceKeyAndChildrenToParent(int pos, int minKeysQty, Node<V> newNode) {
+            parent.InsertKey(pos, keys[minKeysQty]);
+            parent.InsertChildren(pos + 1, newNode);
+            keys[minKeysQty] = default(V);
+            keysQty--;
+        }
+        private void InsertKey(int pos, V val) {
+            for (int i = keys.Length - 1; i > pos; i--)
+            {               
+                keys[i] = keys[i - 1];
+            }
+            keys[pos] = val;
+            keysQty++;
+        }
+        private void InsertChildren(int pos, Node<V> child) {
+            for (int i = keys.Length; i >= pos; i--)
+            {
+                children[i] = children[i - 1];
+            }
+            children[pos] = child;
         }
         private void FillNewNode(Node<V> newNode, int minQty) {
             for (int i = 0; i < minQty - 1; i++)
@@ -281,21 +302,7 @@ namespace B_Tree
                 newNode.children[i].parent = newNode;
                 children[i + minQty] = null;
             }
-        }
-        private void ReplaceKeysAndChildren(int pos, int MinKeysQty, Node<V> newChildren) {
-            FreeKeyAndChildOnPos(pos);
-            children[pos + 1] = newChildren;
-            keys[pos] = children[pos].keys[MinKeysQty];
-            keysQty++;
-        }
-        private void FreeKeyAndChildOnPos(int pos) {
-            for (int i = keys.Length; i >= pos; i--)
-            {
-                children[i + 1] = children[i];
-                if (i != keys.Length)
-                    keys[i + 1] = keys[i];
-            }
-        }
+        }      
         public bool searchInNode(V val) {
             int pos = FindValPosition(val);
             var compare = Match(pos, val);

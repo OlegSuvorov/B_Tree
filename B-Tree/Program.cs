@@ -23,9 +23,9 @@ namespace B_Tree
             Console.WriteLine(" Минимально допустимый размер массива значений в узлах равен 2");
 
             B_Tree<int> TestIntTree = new B_Tree<int>(5);
-            //int[] intArr = new int[] {1, 15, 8, 9, 13, 10, 3, 16, 19, 14, 12, 17, 5, 18, 6, 2, 7, 20, 4, 11};
+            int[] intArr = new int[] {1, 15, 8, 9, 13, 10, 3, 16, 19, 14, 12, 17, 5, 18, 6, 2, 7, 20, 4, 11};
             //int[] intArr = new int[] { 1, 3, 5, 4, 2 };
-            int[] intArr = new int[] { 1, 8, 9, 3, 5, 6, 2, 7, 9 };
+            //int[] intArr = new int[] { 1, 8, 9, 3, 5, 6, 2, 7, 9 };
             //int[] intArr = new int[] { 1, 8, 9, 3, 10, 5, 6, 11, 2, 7, 9 };
             //int[] intArr = new int[20];
             //for (int i = 0; i < 20; i++)
@@ -42,11 +42,13 @@ namespace B_Tree
             //    intArr[j] = intArr[i];
             //    intArr[i] = tmp;
             //}
-            for (int i = 0; i < 9; i++)
+            for (int i = 0; i < 20; i++)
             {
                 TestIntTree.Insert(intArr[i]);
             }
-          
+            Console.WriteLine($" 1) Проверяем наличие уже добавленного значения 8 в дереве");
+            Console.WriteLine($" Ожидаем: True. Результат: {TestIntTree.Search(20)}");
+
             Console.Read();
             //Console.WriteLine(" В тестовое дерево добавлены значения от 1 до 499");
 
