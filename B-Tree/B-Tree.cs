@@ -10,8 +10,7 @@ namespace B_Tree
     {
         public Node<V> root { get; private set; }
         public int maxNodeSize { get; private set; }
-        public B_Tree(int maxNodeSize)
-        {
+        public B_Tree(int maxNodeSize) {
             if (maxNodeSize < 3)
             {
                 Console.WriteLine(" Максимальный размер узла должен быть целым положительным числом не менее 3");
@@ -21,15 +20,14 @@ namespace B_Tree
             this.maxNodeSize = maxNodeSize;
         }
 
-        public bool Insert(V val)
-        {
+        public bool Insert(V val) {
             if (root.keysQty == 0)
             {
-                root.AddKey(val);              
+                root.AddKey(val);
                 return true;
             }
             if (root.keysQty == maxNodeSize)
-            {               
+            {
                 Node<V> oldRoot = root.TransformToChild();
                 Node<V> newRootChild = oldRoot.SplitNode(0);
                 Node<V> NextNodeForInsert = root.GetNextNode(val);
@@ -37,12 +35,10 @@ namespace B_Tree
             }
             return root.InsertNonFullNode(val);
         }
-        public bool Search(V val)
-        {
+        public bool Search(V val) {
             return root.searchInNode(val);
-        }        
-        public bool Delete(V val)
-        {
+        }
+        public bool Delete(V val) {
             return root.DeleteInNode(val);
         }
     }
