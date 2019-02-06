@@ -20,6 +20,7 @@ namespace B_Tree
             {
                 intArr[i] = i + 1;
             }
+            // Перемешиваем массив
             Random rand = new Random();
 
             for (int i = intArr.Length - 1; i >= 1; i--)
@@ -30,6 +31,7 @@ namespace B_Tree
                 intArr[j] = intArr[i];
                 intArr[i] = tmp;
             }
+
             for (int i = 0; i < 500; i++)
             {
                 TestIntTree.Insert(intArr[i]);
@@ -126,7 +128,7 @@ namespace B_Tree
             Console.WriteLine($" на конечной позиции последнего листа дерева");
             Console.WriteLine($" Ожидаем: True. Результат: {Test<string>.CheckMaxValuePosition(TestStrTree, "z")}");
 
-            Console.WriteLine(" \nТест удаления из числового дерева");
+            Console.WriteLine(" \n Тест удаления из числового дерева");
             Console.WriteLine($" 1) Удаляем значение 255");
             TestIntTree.Delete(255);
             Console.WriteLine($" 2) Проверяем наличие отсутствующего значения 255 в дереве");
@@ -153,7 +155,7 @@ namespace B_Tree
             Console.WriteLine($" на конечной позиции последнего листа дерева");
             Console.WriteLine($" Ожидаем: True. Результат: {Test<int>.CheckMaxValuePosition(TestIntTree, 500)}");
 
-            Console.WriteLine(" \nТест удаления из символьного дерева");
+            Console.WriteLine(" \n Тест удаления из символьного дерева");
             Console.WriteLine($" 1) Удаляем значение k");
             TestCharTree.Delete('k');
             Console.WriteLine($" 2) Проверяем наличие отсутствующего значения k в дереве");
@@ -180,7 +182,7 @@ namespace B_Tree
             Console.WriteLine($" на конечной позиции последнего листа дерева");
             Console.WriteLine($" Ожидаем: True. Результат: {Test<char>.CheckMaxValuePosition(TestCharTree, 'z')}");
 
-            Console.WriteLine(" \nТест удаления из строчного дерева");
+            Console.WriteLine(" \n Тест удаления из строчного дерева");
             Console.WriteLine($" 1) Удаляем значение k");
             TestStrTree.Delete("k");
             Console.WriteLine($" 2) Проверяем наличие отсутствующего значения k в дереве");

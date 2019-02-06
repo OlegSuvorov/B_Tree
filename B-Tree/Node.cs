@@ -175,7 +175,6 @@ namespace B_Tree
                 children[i].parent = this;
             }
         }
-
         public bool InsertNonFullNode(V val) {
             var result = FindInNode(val);
             switch (result.status)
@@ -183,7 +182,7 @@ namespace B_Tree
                 case Status.Found:
                     return false;
                 case Status.NotFoundLeaf:
-                    InsertKey(result.pos, val);
+                    InsertKeyAndChildren(result.pos, val, null);
                     return true; 
                 case Status.NotFoundNode:
                     return InsertInternalNode(val);
@@ -196,8 +195,8 @@ namespace B_Tree
             if (child.keysQty == keys.Length)
             {
                 child.SplitNode(result.pos);
-                if (Match(result.pos, val) > 0)
-                    return children[result.pos + 1].InsertNonFullNode(val);
+                var nextResult = FindInNode(val);
+                return nextResult.node.InsertNonFullNode(val);
             }
             return child.InsertNonFullNode(val);
         }
@@ -212,25 +211,34 @@ namespace B_Tree
             return newNode;
         }
         private void ReplaceKeyAndChildrenToParent(int pos, int minKeysQty, Node<V> newNode) {
-            parent.InsertKey(pos, keys[minKeysQty]);
-            parent.InsertChildren(pos + 1, newNode);
+            parent.InsertKeyAndChildren(pos, keys[minKeysQty], newNode);
             keys[minKeysQty] = default(V);
             keysQty--;
         }
-        private void InsertKey(int pos, V val) {
-            for (int i = keys.Length - 1; i > pos; i--)
-            {               
-                keys[i] = keys[i - 1];
+        private void InsertKeyAndChildren (int pos, V val, Node<V> child) {
+            if (child == null)
+            {
+                for (int i = keys.Length - 1; i > pos; i--)
+                {
+                    keys[i] = keys[i - 1];
+                }
+                keys[pos] = val;
+                keysQty++;
+                return;
             }
-            keys[pos] = val;
-            keysQty++;
-        }
-        private void InsertChildren(int pos, Node<V> child) {
-            for (int i = keys.Length; i >= pos; i--)
+
+            for (int i = keys.Length; i >= pos + 1; i--)
             {
                 children[i] = children[i - 1];
+                if (i == keys.Length || i <= pos)
+                {
+                    continue;
+                }
+                keys[i] = keys[i - 1];
             }
-            children[pos] = child;
+            children[pos + 1] = child;
+            keys[pos] = val;
+            keysQty++;
         }
         private void FillNewNode(Node<V> newNode, int minQty) {
             for (int i = 0; i < minQty - 1; i++)
