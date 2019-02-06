@@ -86,14 +86,7 @@ namespace B_Tree
                 children[i] = children[i + 1];
             }
             children[keysQty] = null;
-        }
-        private void FreePlaceForValInsert(int pos) {
-            for (int i = keysQty; i > pos; i--)
-            {
-                keys[i] = keys[i - 1];
-            }
-            keysQty++;
-        }
+        }       
         private void FreePlaceForValAndChildrenInsert(int pos) {
             for (int i = keysQty + 1; i > pos; i--)
             {
@@ -261,10 +254,10 @@ namespace B_Tree
             FillNewNode(newNode, minChildrenQty);
             if (!isLeaf)
                 SplitChildren(newNode, minChildrenQty);
-            replaceKeyAndChildrenToParent(pos, minKeysQty, newNode);
+            ReplaceKeyAndChildrenToParent(pos, minKeysQty, newNode);
             return newNode;
         }
-        private void replaceKeyAndChildrenToParent(int pos, int minKeysQty, Node<V> newNode) {
+        private void ReplaceKeyAndChildrenToParent(int pos, int minKeysQty, Node<V> newNode) {
             parent.InsertKey(pos, keys[minKeysQty]);
             parent.InsertChildren(pos + 1, newNode);
             keys[minKeysQty] = default(V);
@@ -304,19 +297,17 @@ namespace B_Tree
             }
         }      
         public bool searchInNode(V val) {
-            int pos = FindValPosition(val);
-            var compare = Match(pos, val);
-            if (compare == 0)
+            var result = FindInNode(val);         
+            switch (result.Item2)
             {
-                return true;
+                case Status.Found:
+                    return true;
+                case Status.NotFoundLeaf:
+                    return false;
+                case Status.NotFoundNode:
+                    return children[result.Item1].searchInNode(val);
+                default: return false;
             }
-            if (isLeaf)
-                return false;
-            if (compare > 0)
-            {
-                return children[pos + 1].searchInNode(val);
-            }
-            return children[pos].searchInNode(val);
         }
         private int GetValPosition(V val) {
             return Array.IndexOf(keys, val);
