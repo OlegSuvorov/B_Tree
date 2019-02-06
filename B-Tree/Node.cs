@@ -41,18 +41,11 @@ namespace B_Tree
             }
             donateNode.NodeDeleteVal(0);
         }
-        private void ReplaceFromLeftNode(Node<V> node, int nodePos) {
-            var incompleteNode = node.children[nodePos];
+        private void ReplaceFromLeftNode(Node<V> node, int nodePos) {            
             var donateNode = node.children[nodePos - 1];
-            incompleteNode.FreePlaceForValAndChildrenInsert(0);
-            incompleteNode.keys[0] = node.keys[nodePos - 1];
-            incompleteNode.children[0] = donateNode.children[donateNode.keysQty];
-
+            FillFromDonateNode(donateNode, nodePos);
             node.keys[nodePos - 1] = donateNode.keys[donateNode.keysQty - 1];
-
-            donateNode.children[donateNode.keysQty] = null;
-            donateNode.keys[donateNode.keysQty - 1] = default(V);
-            donateNode.keysQty--;
+            donateNode.DeleteLastKeyAndChild();
         }
         private void NodeDeleteChild(int pos) {
             for (int i = pos; i < keysQty; i++)
@@ -60,15 +53,22 @@ namespace B_Tree
                 children[i] = children[i + 1];
             }
             children[keysQty] = null;
-        }       
-        private void FreePlaceForValAndChildrenInsert(int pos) {
-            for (int i = keysQty + 1; i > pos; i--)
+        }
+        private void FillFromDonateNode(Node<V> donateNode, int pos) {
+            for (int i = keysQty + 1; i > 0; i--)
             {
                 children[i] = children[i - 1];
                 if (i != keysQty + 1)
                     keys[i] = keys[i - 1];
             }
             keysQty++;
+            keys[0] = parent.keys[pos - 1];
+            children[0] = donateNode.children[donateNode.keysQty];
+        }
+        private void DeleteLastKeyAndChild() {
+            children[keysQty] = null;
+            keys[keysQty - 1] = default(V);
+            keysQty--;
         }
         public void AddKey(V key) {
             keys[keysQty] = key;
@@ -90,18 +90,18 @@ namespace B_Tree
         }
         public bool DeleteInNode(V val) {
             var result = FindInNode(val);
-            switch (result.Item2)
+            switch (result.status)
             {
                 case Status.Found:
                     if (isLeaf)
-                        DeleteInLeaf(result.Item1);
+                        DeleteInLeaf(result.pos);
                     else
-                        DeleteInNonLeaf(val, result.Item1);
+                        DeleteInNonLeaf(val, result.pos);
                     return true;
                 case Status.NotFoundLeaf:
                     return false;
                 case Status.NotFoundNode:
-                    return result.Item3.DeleteInNode(val);
+                    return result.node.DeleteInNode(val);
                 default: return false;
             }
         }
@@ -175,50 +175,31 @@ namespace B_Tree
                 children[i].parent = this;
             }
         }
-        public Node<V> GetNextNode(V val) {
-            int i = Match(0, val) > 0 ? 1 : 0;
-            return children[i];
-        }
+
         public bool InsertNonFullNode(V val) {
-            if (CheckDuplicate(val))
-                return false;
-
-            if (isLeaf)
-                return InsertLeaf(val);
-
-            return InsertInternalNode(val);
-
+            var result = FindInNode(val);
+            switch (result.status)
+            {
+                case Status.Found:
+                    return false;
+                case Status.NotFoundLeaf:
+                    InsertKey(result.pos, val);
+                    return true; 
+                case Status.NotFoundNode:
+                    return InsertInternalNode(val);
+                default: return false;
+            }
         }
         private bool InsertInternalNode(V val) {
             var result = FindInNode(val);
-            var child = result.Item3;
+            var child = result.node;
             if (child.keysQty == keys.Length)
             {
-                child.SplitNode(result.Item1);
-                if (Match(result.Item1, val) > 0)
-                    return children[result.Item1 + 1].InsertNonFullNode(val);
-
+                child.SplitNode(result.pos);
+                if (Match(result.pos, val) > 0)
+                    return children[result.pos + 1].InsertNonFullNode(val);
             }
             return child.InsertNonFullNode(val);
-        }
-        private bool InsertLeaf(V val) {
-            int pos = keysQty - 1;
-            while (pos >= 0 && Match(pos, val) < 0)
-            {
-                keys[pos + 1] = keys[pos];
-                pos--;
-            }
-            keys[pos + 1] = val;
-            keysQty++;
-            return true;
-        }
-        private bool CheckDuplicate(V val) {
-            for (int i = 0; i < keysQty; i++)
-            {
-                if (Match(i, val) == 0)
-                    return true;
-            }
-            return false;
         }
         public Node<V> SplitNode(int pos) {
             Node<V> newNode = new Node<V>(keys.Length, isLeaf);
@@ -271,19 +252,16 @@ namespace B_Tree
         }      
         public bool searchInNode(V val) {
             var result = FindInNode(val);         
-            switch (result.Item2)
+            switch (result.status)
             {
                 case Status.Found:
                     return true;
                 case Status.NotFoundLeaf:
                     return false;
                 case Status.NotFoundNode:
-                    return result.Item3.searchInNode(val);
+                    return result.node.searchInNode(val);
                 default: return false;
             }
-        }
-        private int GetValPosition(V val) {
-            return Array.IndexOf(keys, val);
         }
         private int GetNodePosition(Array arr, Node<V> node) {
             return Array.IndexOf(arr, node);
@@ -314,7 +292,7 @@ namespace B_Tree
         private int Match(int pos, V val) {
             return val.CompareTo(keys[pos]);
         }
-        public (int, Status, Node<V>) FindInNode(V val) {
+        public (int pos, Status status, Node<V> node) FindInNode(V val) {
             int pos = 0;
             for (; pos < keysQty; pos++)
             {
