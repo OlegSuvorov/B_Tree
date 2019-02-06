@@ -20,38 +20,12 @@ namespace B_Tree
             keysQty = 0;
             this.isLeaf = isLeaf;
             parent = null;
-        }
-        private Node<V> FindNodeWithClosestVal(V val) {
-            int pos = GetValPosition(val);
-            Node<V> foundNode = children[pos + 1];
-            return foundNode.GetFirstLowestNode();
-        }
-        private Node<V> GetFirstLowestNode() {
+        }       
+        private Node<V> GetLeafNode() {
             if (isLeaf)
                 return this;
-            return children[0].GetFirstLowestNode();
-        }
-        private int FindValPosition(V val) {
-            int pos = 0;
-            while (pos < keysQty && Match(pos, val) > 0)
-                pos++;
-            Debug.WriteLine("FindPos {0} {1} {2}", pos, val, string.Join(",", keys));
-            return pos;
-        }
-        private int FindChildPosition(V val) {
-            int pos = 0;
-            for (int i = pos; i < keysQty; i++)
-            {
-                if (Match(pos, val) > 0)
-                {
-                    pos++;
-                }
-            }
-            return pos;
-        }
-        private bool CheckValExistence(V val) {
-            return GetValPosition(val) > -1;
-        }
+            return children[0].GetLeafNode();
+        }       
         private void ReplaceFromRightNode(Node<V> node, int nodePos) {
             var incompleteNode = node.children[nodePos];
             var donateNode = node.children[nodePos + 1];
@@ -115,29 +89,28 @@ namespace B_Tree
             }
         }
         public bool DeleteInNode(V val) {
-            bool valueExistInNode = CheckValExistence(val);
-            if (valueExistInNode)
+            var result = FindInNode(val);
+            switch (result.Item2)
             {
-                if (isLeaf)
-                    DeleteInLeaf(val);
-                else
-                    DeleteInNonLeaf(val);
-                return true;
+                case Status.Found:
+                    if (isLeaf)
+                        DeleteInLeaf(result.Item1);
+                    else
+                        DeleteInNonLeaf(val, result.Item1);
+                    return true;
+                case Status.NotFoundLeaf:
+                    return false;
+                case Status.NotFoundNode:
+                    return result.Item3.DeleteInNode(val);
+                default: return false;
             }
-            if (isLeaf)
-                return false;
-            int valuePosition = FindValPosition(val);
-            if (Match(valuePosition, val) > 0)
-                valuePosition++;
-            return children[valuePosition].DeleteInNode(val);
         }
-        private void DeleteInNonLeaf(V val) {
-            Node<V> LeafNode = FindNodeWithClosestVal(val);
-            keys[GetValPosition(val)] = LeafNode.keys[0];
-            LeafNode.DeleteInLeaf(LeafNode.keys[0]);
+        private void DeleteInNonLeaf(V val, int pos) {
+            var LeafNode = children[pos + 1].GetLeafNode();
+            keys[pos] = LeafNode.keys[0];
+            LeafNode.DeleteInLeaf(0);
         }
-        private void DeleteInLeaf(V val) {
-            int pos = GetValPosition(val);
+        private void DeleteInLeaf(int pos) {            
             NodeDeleteVal(pos);
             RebalanceNode();
         }
@@ -305,7 +278,7 @@ namespace B_Tree
                 case Status.NotFoundLeaf:
                     return false;
                 case Status.NotFoundNode:
-                    return children[result.Item1].searchInNode(val);
+                    return result.Item3.searchInNode(val);
                 default: return false;
             }
         }
@@ -315,8 +288,8 @@ namespace B_Tree
         private int GetNodePosition(Array arr, Node<V> node) {
             return Array.IndexOf(arr, node);
         }
-        private void NodeDeleteVal(int valPosition) {
-            for (int i = valPosition; i < keysQty - 1; i++)
+        private void NodeDeleteVal(int pos) {
+            for (int i = pos; i < keysQty - 1; i++)
             {
                 keys[i] = keys[i + 1];
             }
@@ -348,10 +321,8 @@ namespace B_Tree
                 var res = Match(pos, val);
                 if (res == 0)
                     return (pos, Status.Found, null);
-                if (res < 0) break;
-                // return isLeaf ? (pos, Status.NotFoundLeaf, this) : (pos, Status.NotFoundNode, children[pos]);
+                if (res < 0) break;                
             }
-
             return isLeaf ? (pos, Status.NotFoundLeaf, null) : (pos, Status.NotFoundNode, children[pos]);
         }
     }
