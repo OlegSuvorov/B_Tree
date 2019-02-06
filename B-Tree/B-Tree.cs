@@ -30,8 +30,8 @@ namespace B_Tree
             {
                 Node<V> oldRoot = root.TransformToChild();
                 Node<V> newRootChild = oldRoot.SplitNode(0);
-                Node<V> NextNodeForInsert = root.GetNextNode(val);
-                return NextNodeForInsert.InsertNonFullNode(val);
+                var result = root.FindInNode(val);
+                return result.node.InsertNonFullNode(val);
             }
             return root.InsertNonFullNode(val);
         }
