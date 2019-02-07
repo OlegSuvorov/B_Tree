@@ -11,8 +11,6 @@ namespace B_Tree
         static void Main(string[] args)
         {          
             Console.WriteLine(" Тестовое числовое дерево");
-            Console.WriteLine(" Максимально допустимый размер массива значений в узлах равен 5");
-            Console.WriteLine(" Минимально допустимый размер массива значений в узлах равен 2");
 
             B_Tree<int> TestIntTree = new B_Tree<int>(5);           
             int[] intArr = new int[500];
@@ -60,8 +58,6 @@ namespace B_Tree
             Console.WriteLine($" Ожидаем: True. Результат: {Test<int>.CheckMaxValuePosition(TestIntTree, 500)}");
 
             Console.WriteLine("\n Тестовое символьное дерево");
-            Console.WriteLine(" Максимально допустимый размер массива значений в узлах равен 5");
-            Console.WriteLine(" Минимально допустимый размер массива значений в узлах равен 2");
 
             B_Tree<char> TestCharTree = new B_Tree<char>(5);
 
@@ -94,39 +90,37 @@ namespace B_Tree
             Console.WriteLine($" Ожидаем: True. Результат: {Test<char>.CheckMaxValuePosition(TestCharTree, 'z')}");
 
             Console.WriteLine("\n Тестовое строчное дерево");
-            Console.WriteLine(" Максимально допустимый размер массива значений в узлах равен 5");
-            Console.WriteLine(" Минимально допустимый размер массива значений в узлах равен 2");
 
             B_Tree<string> TestStrTree = new B_Tree<string>(5);
 
             string baseString = "bidfagzemsjtlnxcukqprvwoyh";
 
-            for (int i = 0; i < baseString.Length; i++)
+            for (int i = 0; i < baseString.Length - 1; i++)
             {
-                TestStrTree.Insert(baseString[i].ToString());
+                TestStrTree.Insert(baseString[i].ToString() + baseString[i + 1].ToString());
             }
 
-            Console.WriteLine(" В строчное дерево добавлены строки от a до z");
+            Console.WriteLine(" В строчное дерево добавлены строки от ag до ze");
 
             Console.WriteLine($" \n Тесты");
-            Console.WriteLine($" 1) Проверяем наличие уже добавленного значения a в дереве");
-            Console.WriteLine($" Ожидаем: True. Результат: {TestStrTree.Search("a")}");
+            Console.WriteLine($" 1) Проверяем наличие уже добавленного значения ag в дереве");
+            Console.WriteLine($" Ожидаем: True. Результат: {TestStrTree.Search("ag")}");
             Console.WriteLine($" 2) Проверяем наличие отсутствующего значения ф в дереве");
             Console.WriteLine($" Ожидаем: False. Результат: {TestStrTree.Search("ф")}");
-            Console.WriteLine($" 3) Проверяем невозможность добавить уже существующее значение k");
-            Console.WriteLine($" Ожидаем: False. Результат: {TestStrTree.Insert("k")}");
+            Console.WriteLine($" 3) Проверяем невозможность добавить уже существующее значение kq");
+            Console.WriteLine($" Ожидаем: False. Результат: {TestStrTree.Insert("kq")}");
             Console.WriteLine($" 4) Проверяем дерево на максимально и минимально");
             Console.WriteLine($" допустимый размер массива значений в узлах");
             Console.WriteLine($" Ожидаем: True. Результат: {Test<string>.CheckAllowedSize(TestStrTree)}");
             Console.WriteLine($" 5) Проверяем узлы дерева на упорядоченность ");
             Console.WriteLine($" элементов по возрастанию");
             Console.WriteLine($" Ожидаем: True. Результат: {Test<string>.CheckOrder(TestStrTree)}");
-            Console.WriteLine($" 6) Проверяем наличие наименьшего введенного значения (a)");
+            Console.WriteLine($" 6) Проверяем наличие наименьшего введенного значения (ag)");
             Console.WriteLine($" на начальной позиции первого листа дерева");
-            Console.WriteLine($" Ожидаем: True. Результат: {Test<string>.CheckMinValuePosition(TestStrTree, "a")}");
-            Console.WriteLine($" 7) Проверяем наличие наибольшего введенного значения (z)");
+            Console.WriteLine($" Ожидаем: True. Результат: {Test<string>.CheckMinValuePosition(TestStrTree, "ag")}");
+            Console.WriteLine($" 7) Проверяем наличие наибольшего введенного значения (ze)");
             Console.WriteLine($" на конечной позиции последнего листа дерева");
-            Console.WriteLine($" Ожидаем: True. Результат: {Test<string>.CheckMaxValuePosition(TestStrTree, "z")}");
+            Console.WriteLine($" Ожидаем: True. Результат: {Test<string>.CheckMaxValuePosition(TestStrTree, "ze")}");
 
             Console.WriteLine(" \n Тест удаления из числового дерева");
             Console.WriteLine($" 1) Удаляем значение 255");
@@ -183,16 +177,16 @@ namespace B_Tree
             Console.WriteLine($" Ожидаем: True. Результат: {Test<char>.CheckMaxValuePosition(TestCharTree, 'z')}");
 
             Console.WriteLine(" \n Тест удаления из строчного дерева");
-            Console.WriteLine($" 1) Удаляем значение k");
-            TestStrTree.Delete("k");
-            Console.WriteLine($" 2) Проверяем наличие отсутствующего значения k в дереве");
-            Console.WriteLine($" Ожидаем: False. Результат: {TestStrTree.Search("k")}");
+            Console.WriteLine($" 1) Удаляем значение kq");
+            TestStrTree.Delete("kq");
+            Console.WriteLine($" 2) Проверяем наличие отсутствующего значения kq в дереве");
+            Console.WriteLine($" Ожидаем: False. Результат: {TestStrTree.Search("kq")}");
             Console.WriteLine($" 3) Проверяем наличие остальных значений в дереве");
             bool isStrRestExist = true;
-            for (int i = 0; i < baseStr.Length; i++)
+            for (int i = 0; i < baseStr.Length - 1; i++)
             {
-                if (baseString[i].ToString() == "k") continue;
-                if (!TestStrTree.Search(baseString[i].ToString()))
+                if ((baseString[i].ToString() + baseString[i + 1].ToString()) == "kq") continue;
+                if (!TestStrTree.Search(baseString[i].ToString() + baseString[i + 1].ToString()))
                     isStrRestExist = false;
             }
             Console.WriteLine($" Ожидаем: True. Результат: {isStrRestExist}");
@@ -202,12 +196,12 @@ namespace B_Tree
             Console.WriteLine($" 5) Проверяем узлы дерева на упорядоченность ");
             Console.WriteLine($" элементов по возрастанию");
             Console.WriteLine($" Ожидаем: True. Результат: {Test<string>.CheckOrder(TestStrTree)}");
-            Console.WriteLine($" 6) Проверяем наличие наименьшего введенного значения (a)");
+            Console.WriteLine($" 6) Проверяем наличие наименьшего введенного значения (ag)");
             Console.WriteLine($" на начальной позиции первого листа дерева");
-            Console.WriteLine($" Ожидаем: True. Результат: {Test<string>.CheckMinValuePosition(TestStrTree, "a")}");
-            Console.WriteLine($" 7) Проверяем наличие наибольшего введенного значения (z)");
+            Console.WriteLine($" Ожидаем: True. Результат: {Test<string>.CheckMinValuePosition(TestStrTree, "ag")}");
+            Console.WriteLine($" 7) Проверяем наличие наибольшего введенного значения (ze)");
             Console.WriteLine($" на конечной позиции последнего листа дерева");
-            Console.WriteLine($" Ожидаем: True. Результат: {Test<string>.CheckMaxValuePosition(TestStrTree, "z")}");
+            Console.WriteLine($" Ожидаем: True. Результат: {Test<string>.CheckMaxValuePosition(TestStrTree, "ze")}");
             Console.Read();
         }
     }
